@@ -33,6 +33,11 @@ def create_group():
     group_members[group_id] = set()
     return jsonify(groups[group_id]), 201
 
+
+@app.route("/groups", methods=["GET"])
+def list_groups():
+    return jsonify(list(groups.values()))
+
 @app.route("/groups/<int:group_id>/members", methods=["POST"])
 def add_member(group_id):
     data = request.json
