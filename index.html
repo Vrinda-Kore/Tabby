@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tabby – Split Expense Tracker</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    input, button { margin: 0.5em 0; padding: 0.5em; }
+    section { margin-bottom: 2em; }
+    pre { background: #f4f4f4; padding: 1em; }
+  </style>
+</head>
+<body>
+
+  <h1>Tabby – Split Expense Tracker</h1>
+
+  <!-- Create Group -->
+  <section>
+    <h3>Create Group</h3>
+    <input type="text" id="groupName" placeholder="Group name">
+    <button onclick="createGroup()">Create</button>
+    <pre id="groupResult"></pre>
+  </section>
+
+  <!-- Add Member -->
+  <section>
+    <h3>Add Member</h3>
+    <input type="number" id="memberUserId" placeholder="User ID (e.g., 1 or 2)">
+    <input type="number" id="memberGroupId" placeholder="Group ID">
+    <button onclick="addMember()">Add</button>
+    <pre id="memberResult"></pre>
+  </section>
+
+  <!-- Add Expense -->
+  <section>
+    <h3>Add Expense</h3>
+    <input type="number" id="expenseAmount" placeholder="Amount">
+    <input type="number" id="expensePaidBy" placeholder="Paid by (User ID)">
+    <input type="text" id="expenseSplitWith" placeholder="Split with (e.g., 1,2)">
+    <input type="text" id="expenseDesc" placeholder="Description">
+    <input type="number" id="expenseGroupId" placeholder="Group ID">
+    <button onclick="addExpense()">Add</button>
+    <pre id="expenseResult"></pre>
+  </section>
+
+  <!-- View Balances -->
+  <section>
+    <h3>View Balances</h3>
+    <input type="number" id="balanceGroupId" placeholder="Group ID">
+    <button onclick="viewBalances()">View</button>
+    <pre id="balanceResult"></pre>
+  </section>
+
+  <script>
+    const baseURL = 'https://tabby-5qlc.onrender.com';
+
+    async function createGroup() {
+      const name = document.getElementById('groupName').value;
+      const res = await fetch(`${baseURL}/groups`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      document.getElementById('groupResult').textContent = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function addMember() {
+      const groupId = document.getElementById('memberGroupId').value;
+      const userId = parseInt(document.getElementById('memberUserId').value);
+      const res = await fetch(`${baseURL}/groups/${groupId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId })
+      });
+      document.getElementById('memberResult').textContent = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function addExpense() {
+      const groupId = document.getElementById('expenseGroupId').value;
+      const amount = parseFloat(document.getElementById('expenseAmount').value);
+      const paid_by = parseInt(document.getElementById('expensePaidBy').value);
+      const split_with = document.getElementById('expenseSplitWith').value.split(',').map(Number);
+      const description = document.getElementById('expenseDesc').value;
+
+      const res = await fetch(`${baseURL}/groups/${groupId}/expenses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, paid_by, split_with, description })
+      });
+      document.getElementById('expenseResult').textContent = JSON.stringify(await res.json(), null, 2);
+    }
+
+    async function viewBalances() {
+      const groupId = document.getElementById('balanceGroupId').value;
+      const res = await fetch(`${baseURL}/groups/${groupId}/balances`);
+      document.getElementById('balanceResult').textContent = JSON.stringify(await res.json(), null, 2);
+    }
+  </script>
+
+</body>
+</html>
