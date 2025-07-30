@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Enables CORS for all routes
 
 # (in-memory, for demo only)
 users = {
@@ -33,7 +33,6 @@ def create_group():
     group_members[group_id] = set()
     return jsonify(groups[group_id]), 201
 
-
 @app.route("/groups", methods=["GET"])
 def list_groups():
     return jsonify(list(groups.values()))
@@ -48,6 +47,27 @@ def add_member(group_id):
         return jsonify({"error": "User not found"}), 404
     group_members[group_id].add(user_id)
     return jsonify({"group_id": group_id, "members": list(group_members[group_id])})
+
+
+next_user_id = max(users.keys()) + 1  # start from next available id
+
+@app.route("/users", methods=["POST"])
+def create_user():
+    global next_user_id
+    data = request.json
+    name = data.get("name")
+    if not name:
+        return jsonify({"error": "User name required"}), 400
+
+    # Simple check for duplicate names (optional)
+    if any(user['name'].lower() == name.lower() for user in users.values()):
+        return jsonify({"error": "User name already exists"}), 400
+
+    user_id = next_user_id
+    next_user_id += 1
+    users[user_id] = {"id": user_id, "name": name}
+    return jsonify(users[user_id]), 201
+
 
 @app.route("/groups/<int:group_id>/expenses", methods=["POST"])
 def add_expense(group_id):
